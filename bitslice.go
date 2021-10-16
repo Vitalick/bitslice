@@ -105,3 +105,73 @@ func (s BitSlice) ToBuffer(w io.Writer) error {
 func (s BitSlice) Len() int {
 	return len(s.Slice)
 }
+
+//ShiftLeft returns shifted BitSlice, like << operation
+func (s BitSlice) ShiftLeft(val int) BitSlice {
+	if val < 0 {
+		return s.ShiftRight(-val)
+	}
+	newSlice := s
+	newSlice.Slice = make([]bool, s.Len())
+	for i, bit := range s.Slice[val:] {
+		newSlice.Slice[i] = bit
+	}
+	return newSlice
+}
+
+//ShiftRight returns shifted BitSlice, like >> operation
+func (s BitSlice) ShiftRight(val int) BitSlice {
+	if val < 0 {
+		return s.ShiftLeft(-val)
+	}
+	newSlice := s
+	sLen := s.Len()
+	newSlice.Slice = make([]bool, sLen)
+	ns := s.Slice[:val]
+	nsLen := len(ns)
+	for i, bit := range ns {
+		newSlice.Slice[sLen-nsLen+i] = bit
+	}
+	return newSlice
+}
+
+//Inverse returns inverted BitSlice
+func (s BitSlice) Inverse() BitSlice {
+	newSlice := s
+	for i, bit := range newSlice.Slice {
+		newSlice.Slice[i] = !bit
+	}
+	return newSlice
+}
+
+//Or returns combine of 2 BitSlice, like | operation
+func (s BitSlice) Or(bs BitSlice) BitSlice {
+	smallSlice := bs
+	bigSlice := s
+	if bsLen := bs.Len(); bsLen > s.Len() {
+		smallSlice = s
+		bigSlice = bs
+	}
+	for i := range smallSlice.Slice {
+		smallSlice.Slice[i] = smallSlice.Slice[i] || bigSlice.Slice[i]
+	}
+	smallSlice.ByteOrder = s.ByteOrder
+	return smallSlice
+}
+
+//And returns combine of 2 BitSlice, like & operation
+func (s BitSlice) And(bs BitSlice) BitSlice {
+	sliceLen := s.Len()
+	smallSlice := bs
+	bigSlice := s
+	if bsLen := bs.Len(); bsLen > s.Len() {
+		sliceLen = bsLen
+		smallSlice = s
+		bigSlice = bs
+	}
+	newSlice := BitSlice{make([]bool, sliceLen), s.ByteOrder}
+	for i := range smallSlice.Slice {
+		newSlice.Slice[i] = smallSlice.Slice[i] && bigSlice.Slice[i]
+	}
+	return newSlice
+}
