@@ -118,6 +118,9 @@ func (s BitSlice) LenBytes() int {
 
 //ShiftLeft returns shifted BitSlice, like << operation
 func (s BitSlice) ShiftLeft(val int) BitSlice {
+	if val == 0 {
+		return s
+	}
 	if val < 0 {
 		return s.ShiftRight(-val)
 	}
@@ -131,13 +134,16 @@ func (s BitSlice) ShiftLeft(val int) BitSlice {
 
 //ShiftRight returns shifted BitSlice, like >> operation
 func (s BitSlice) ShiftRight(val int) BitSlice {
+	if val == 0 {
+		return s
+	}
 	if val < 0 {
 		return s.ShiftLeft(-val)
 	}
 	newSlice := s
 	sLen := s.Len()
 	newSlice.Slice = make([]bool, sLen)
-	ns := s.Slice[:val]
+	ns := s.Slice[:sLen-val]
 	nsLen := len(ns)
 	for i, bit := range ns {
 		newSlice.Slice[sLen-nsLen+i] = bit
