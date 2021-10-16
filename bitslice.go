@@ -106,6 +106,16 @@ func (s BitSlice) Len() int {
 	return len(s.Slice)
 }
 
+//LenBytes return length of slice
+func (s BitSlice) LenBytes() int {
+	lenBits := s.Len()
+	lenBytes := lenBits / 8
+	if lenBits%8 > 0 {
+		lenBytes += 1
+	}
+	return lenBytes
+}
+
 //ShiftLeft returns shifted BitSlice, like << operation
 func (s BitSlice) ShiftLeft(val int) BitSlice {
 	if val < 0 {
