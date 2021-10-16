@@ -100,3 +100,8 @@ func (s BitSlice) ToBuffer(w io.Writer) error {
 	}
 	return nil
 }
+
+//Len return length of slice
+func (s BitSlice) Len() int {
+	return len(s.Slice)
+}
