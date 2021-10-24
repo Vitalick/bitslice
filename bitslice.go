@@ -12,6 +12,39 @@ type BitSlice struct {
 	ByteOrder binary.ByteOrder
 }
 
+//NewEmptyBitSlice returns empty BitSlice
+func NewEmptyBitSlice(bo binary.ByteOrder) *BitSlice {
+	return &BitSlice{
+		ByteOrder: bo,
+	}
+}
+
+//NewBitSliceFromAllReader returns BitSlice exported from all io.Reader
+func NewBitSliceFromAllReader(r io.Reader, bo binary.ByteOrder) (*BitSlice, error) {
+	bs := &BitSlice{
+		ByteOrder: bo,
+	}
+	var b byte
+	cnt := 0
+	for {
+		err := binary.Read(r, bo, &b)
+		if err != nil {
+			if err == io.EOF {
+				break
+			}
+			return nil, err
+		}
+		newByte := make([]bool, 8)
+		bs.Slice = append(bs.Slice, newByte...)
+		for j := range [8]struct{}{} {
+			bs.Slice[8*cnt+j] = (b<<7)>>7 == 1
+			b = b >> 1
+		}
+		cnt++
+	}
+	return bs, nil
+}
+
 //NewBitSliceFromBool returns BitSlice exported from []bool
 func NewBitSliceFromBool(b []bool, bo binary.ByteOrder) *BitSlice {
 	return &BitSlice{
@@ -52,7 +85,7 @@ func NewBitSliceFromReader(r io.Reader, bo binary.ByteOrder, bytesSize uint) (*B
 	}
 
 	for i, b := range inBytes {
-		for j := range [8]bool{} {
+		for j := range [8]struct{}{} {
 			nowFunc(&b, 8*i+j)
 		}
 	}
